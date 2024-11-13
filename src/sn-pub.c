@@ -253,7 +253,7 @@ int sn_test(MQTTCtx *mqttCtx)
 
     {
         /* Subscribe Topic */
-        SN_Subscribe subscribe;
+        /*SN_Subscribe subscribe;
 
         XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
 
@@ -270,9 +270,10 @@ int sn_test(MQTTCtx *mqttCtx)
                 subscribe.subAck.topicId, subscribe.subAck.return_code);
 
         if ((rc == 0) && (subscribe.subAck.return_code == SN_RC_ACCEPTED)) {
-            /* Topic ID is returned in SubAck */
-            topicID = subscribe.subAck.topicId;
-        }
+            // Topic ID is returned in SubAck
+            //topicID = subscribe.subAck.topicId;
+        }*/
+        //goto disconn;
     }
 
     {
@@ -280,11 +281,11 @@ int sn_test(MQTTCtx *mqttCtx)
            REGISTER command when another client publishes to a topic that
            matches this topic wildcard. This will trigger the register
            callback. */
-        SN_Subscribe subscribe;
+        //SN_Subscribe subscribe;
 
-        XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
+        //XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
 
-        subscribe.duplicate = 0;
+        /*subscribe.duplicate = 0;
         subscribe.qos = MQTT_QOS_0;
         subscribe.topic_type = SN_TOPIC_ID_TYPE_NORMAL;
         subscribe.topicNameId = WOLFMQTT_TOPIC_NAME"#";
@@ -295,7 +296,7 @@ int sn_test(MQTTCtx *mqttCtx)
 
         PRINTF("....MQTT-SN Subscribe Ack: topic id = %hu, rc = %d",
                 subscribe.subAck.topicId,
-                (rc == 0) ? subscribe.subAck.return_code : rc);
+                (rc == 0) ? subscribe.subAck.return_code : rc);*/
     }
 
     {
@@ -327,6 +328,7 @@ int sn_test(MQTTCtx *mqttCtx)
         if (rc != MQTT_CODE_SUCCESS) {
             goto disconn;
         }
+        goto disconn;
     }
 
     /* The predefined topic examples require modification of the gateway
@@ -342,9 +344,8 @@ int sn_test(MQTTCtx *mqttCtx)
 
        Then restart the gateway.
      */
-#if 0
-    {
-        SN_Publish publish;
+#if 0   
+    {    SN_Publish publish;
         SN_Subscribe subscribe;
         SN_Unsubscribe unsub;
         char pd_topic_id[] = {0,7}; /* Same ID as set above */
@@ -416,7 +417,7 @@ int sn_test(MQTTCtx *mqttCtx)
 
     {
         /* Short topic name subscribe */
-        SN_Subscribe subscribe;
+        /*SN_Subscribe subscribe;
         SN_Publish publish;
         SN_Unsubscribe unsub;
 
@@ -437,10 +438,10 @@ int sn_test(MQTTCtx *mqttCtx)
         PRINTF("....MQTT-SN Subscribe Short Topic Ack: topic id = %c%c, rc = %d",
                 ((byte*)&subscribe.subAck.topicId)[1],
                 ((byte*)&subscribe.subAck.topicId)[0],
-                subscribe.subAck.return_code);
+                subscribe.subAck.return_code);*/
 
         /* Short topic name publish */
-        XMEMSET(&publish, 0, sizeof(SN_Publish));
+        /*XMEMSET(&publish, 0, sizeof(SN_Publish));
         publish.retain = 0;
         publish.qos = mqttCtx->qos;
         publish.duplicate = 0;
@@ -464,10 +465,10 @@ int sn_test(MQTTCtx *mqttCtx)
             publish.buffer);
         if (rc != MQTT_CODE_SUCCESS) {
             goto disconn;
-        }
+        }*/
 
         /* Unsubscribe short topic name */
-        XMEMSET(&unsub, 0, sizeof(SN_Unsubscribe));
+        /*XMEMSET(&unsub, 0, sizeof(SN_Unsubscribe));
 
         unsub.topic_type = SN_TOPIC_ID_TYPE_SHORT;
         unsub.topicNameId = SHORT_TOPIC_NAME;
@@ -476,7 +477,7 @@ int sn_test(MQTTCtx *mqttCtx)
         PRINTF("MQTT-SN Unsubscribe Short Topic: topic ID = %s",
                 unsub.topicNameId);
         rc = SN_Client_Unsubscribe(&mqttCtx->client, &unsub);
-        PRINTF("....MQTT-SN Unsubscribe Short Topic Ack: rc = %d", rc);
+        PRINTF("....MQTT-SN Unsubscribe Short Topic Ack: rc = %d", rc);*/
     }
 
 #if 0
