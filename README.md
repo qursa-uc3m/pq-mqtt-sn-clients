@@ -10,7 +10,7 @@ Clone this repository and navigate to the project directory.
 Run the wolfSSL installation script:
 
 ```bash
-./install_wolfssl.sh
+./scripts/install_wolfssl.sh
 ```
 
 By default, this script installs wolfSSL version `5.6.4-stable`. You can change the version by modifying the `INSTALL_TAG` variable in the `install_wolfssl.sh` script.
@@ -20,7 +20,7 @@ By default, this script installs wolfSSL version `5.6.4-stable`. You can change 
 After installing wolfSSL, install wolfMQTT:
 
 ```bash
-./install_wolfMQTT.sh
+./scripts/install_wolfMQTT.sh
 ```
 
 By default, this script installs wolfMQTT version `1.19.0`. You can change the version by modifying the `INSTALL_TAG` variable in the `install_wolfMQTT.sh` script.
@@ -54,4 +54,25 @@ To run the MQTT-SN subscriber:
 
 ```bash
 ./build/bin/sn-sub -t 
+```
+
+## Testing
+
+The repository includes a test script (`test.sh`) to evaluate both publisher and subscriber clients.
+
+### Usage
+
+```bash
+./test.sh [-n iterations] [-m pub|sub]
+```
+
+Options:
+
+- `-n`: Number of iterations (default: 1)
+- `-m`: Mode - 'pub' for publisher or 'sub' for subscriber (default: pub)
+
+For example, to run the publisher 5 times:
+
+```bash
+./test.sh -n 5 -m pub
 ```
