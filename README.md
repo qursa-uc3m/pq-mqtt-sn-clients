@@ -36,6 +36,8 @@ cmake ..
 make
 ```
 
+Alternatively, you can run the `./scripts/build_clients.sh` script.
+
 ## Running the clients
 
 To run the MQTT-SN client:
