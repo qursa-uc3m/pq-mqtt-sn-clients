@@ -17,16 +17,21 @@ done
 # Create tests_logs directory if it doesn't exist
 mkdir -p ./tests_logs
 
+# Clear out.log file
+> "./tests_logs/out.log"
+
 for i in $(seq 1 $iterations)
 do
  a=$(date +%s%3N)
+ echo "----------------- START ITERATION $i -----------------" >> "./tests_logs/out.log"
  if [ "$mode" = "pub" ]; then
    echo "RUNNING PUBLISHER"
-   ./build/bin/sn-pub -t > "./tests_logs/out.log" 2>&1
+   ./build/bin/sn-pub -t >> "./tests_logs/out.log" 2>&1
  else
    echo "RUNNING SUBSCRIBER"
-   ./build/bin/sn-sub -t > "./tests_logs/out.log" 2>&1
+   ./build/bin/sn-sub -t >> "./tests_logs/out.log" 2>&1
  fi
+ echo "----------------- END ITERATION $i -----------------" >> "./tests_logs/out.log"
  b=$(date +%s%3N)
  resta=$(($b-$a))
  echo "Cliente $i : $resta ms" >> "./tests_logs/sn-$mode.log"
