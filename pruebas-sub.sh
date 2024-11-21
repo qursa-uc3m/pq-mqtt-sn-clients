@@ -7,7 +7,7 @@ do
 
 a=$(date +%s%3N)
 
-./sn-sub -t
+./build/bin/sn-sub -t
 
 b=$(date +%s%3N)
 

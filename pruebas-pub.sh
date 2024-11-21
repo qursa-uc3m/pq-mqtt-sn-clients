@@ -7,7 +7,7 @@ do
 
 a=$(date +%s%3N)
 echo "RINNUING PUB"
-./sn-pub -t > "out.log" 2>&1
+./build/bin/sn-pub -t > "out.log" 2>&1
 
 b=$(date +%s%3N)
 
