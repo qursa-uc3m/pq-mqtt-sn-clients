@@ -35,5 +35,5 @@ do
  b=$(date +%s%3N)
  resta=$(($b-$a))
  echo "Cliente $i : $resta ms" >> "./tests_logs/sn-$mode.log"
- #sleep 1
+ #sleep 2
 done

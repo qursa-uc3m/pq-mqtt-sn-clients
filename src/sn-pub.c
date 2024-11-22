@@ -252,54 +252,6 @@ int sn_test(MQTTCtx *mqttCtx)
     }
 
     {
-        /* Subscribe Topic */
-        /*SN_Subscribe subscribe;
-
-        XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
-
-        subscribe.duplicate = 0;
-        subscribe.qos = MQTT_QOS_0;
-        subscribe.topic_type = SN_TOPIC_ID_TYPE_NORMAL;
-        subscribe.topicNameId = DEFAULT_TOPIC_NAME;
-        subscribe.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Subscribe: topic name = %s", subscribe.topicNameId);
-        rc = SN_Client_Subscribe(&mqttCtx->client, &subscribe);
-
-        PRINTF("....MQTT-SN Subscribe Ack: topic id = %hu, rc = %d",
-                subscribe.subAck.topicId, subscribe.subAck.return_code);
-
-        if ((rc == 0) && (subscribe.subAck.return_code == SN_RC_ACCEPTED)) {
-            // Topic ID is returned in SubAck
-            //topicID = subscribe.subAck.topicId;
-        }*/
-        //goto disconn;
-    }
-
-    {
-        /* Subscribe Wildcard Topic - This allows the gateway to send a
-           REGISTER command when another client publishes to a topic that
-           matches this topic wildcard. This will trigger the register
-           callback. */
-        //SN_Subscribe subscribe;
-
-        //XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
-
-        /*subscribe.duplicate = 0;
-        subscribe.qos = MQTT_QOS_0;
-        subscribe.topic_type = SN_TOPIC_ID_TYPE_NORMAL;
-        subscribe.topicNameId = WOLFMQTT_TOPIC_NAME"#";
-        subscribe.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Subscribe: topic name = %s", subscribe.topicNameId);
-        rc = SN_Client_Subscribe(&mqttCtx->client, &subscribe);
-
-        PRINTF("....MQTT-SN Subscribe Ack: topic id = %hu, rc = %d",
-                subscribe.subAck.topicId,
-                (rc == 0) ? subscribe.subAck.return_code : rc);*/
-    }
-
-    {
         /* Publish Topic */
         XMEMSET(&mqttCtx->publishSN, 0, sizeof(SN_Publish));
         mqttCtx->publishSN.retain = 0;
@@ -331,326 +283,19 @@ int sn_test(MQTTCtx *mqttCtx)
         goto disconn;
     }
 
-    /* The predefined topic examples require modification of the gateway
-       configuration. To add a predefined topic to a Paho MQTTSN-Embedded-C
-       Gateway, open the gateway config file and enable the following:
-
-           PredefinedTopic=YES
-           PredefinedTopicList=./predefinedTopic.conf
-
-       Then in the "predefinedTopic.conf" file, add a topic:
-
-           *, wolfMQTT/example/predefTopic7, 7
-
-       Then restart the gateway.
-     */
-#if 0   
-    {    SN_Publish publish;
-        SN_Subscribe subscribe;
-        SN_Unsubscribe unsub;
-        char pd_topic_id[] = {0,7}; /* Same ID as set above */
-
-        /* Subscribe Predefined Topic */
-        XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
-
-        subscribe.duplicate = 0;
-        subscribe.qos = MQTT_QOS_0;
-        subscribe.topic_type = SN_TOPIC_ID_TYPE_PREDEF;
-        subscribe.topicNameId = pd_topic_id;
-        subscribe.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Predefined Subscribe: topic id = %hu",
-                subscribe.topicNameId[1]);
-        rc = SN_Client_Subscribe(&mqttCtx->client, &subscribe);
-
-        if (rc == MQTT_CODE_SUCCESS) {
-            PRINTF("....MQTT-SN Predefined Subscribe Ack: topic id = %hu, rc = %d",
-                    subscribe.subAck.topicId, subscribe.subAck.return_code);
-        }
-        if ((rc == MQTT_CODE_SUCCESS) && (subscribe.subAck.return_code != 0)) {
-            /* Error in subscribe ack */
-            PRINTF("MQTT-SN Predefined Topic (%d) is invalid in Gateway",
-                    subscribe.subAck.topicId);
-        }
-
-        /* Publish Predefined Topic */
-        XMEMSET(&publish, 0, sizeof(SN_Publish));
-        publish.retain = 0;
-        publish.qos = MQTT_QOS_0;
-        publish.duplicate = 0;
-        publish.topic_type = SN_TOPIC_ID_TYPE_PREDEF;
-
-        /* Use the predefined topic ID */
-        publish.topic_name = pd_topic_id;
-
-        if (publish.qos > MQTT_QOS_0) {
-            publish.packet_id = mqtt_get_packetid();
-        }
-
-        publish.buffer = (byte*)TEST_MESSAGE" predefined";
-        publish.total_len = (word16)XSTRLEN(TEST_MESSAGE" predefined");
-
-        rc = SN_Client_Publish(&mqttCtx->client, &publish);
-
-        PRINTF("MQTT-SN Predefined Publish: topic id = %hu, rc = %d\r\nPayload = %s",
-                publish.topic_name[1],
-                publish.return_code,
-                publish.buffer);
-
-        if (rc != MQTT_CODE_SUCCESS) {
-            goto disconn;
-        }
-
-        /* Unsubscribe from Predefined Topic */
-        XMEMSET(&unsub, 0, sizeof(SN_Unsubscribe));
-
-        unsub.topic_type = SN_TOPIC_ID_TYPE_PREDEF;
-        unsub.topicNameId = pd_topic_id;
-        unsub.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Unsubscribe Predefined Topic: topic id = %hu",
-                unsub.topicNameId[1]);
-        rc = SN_Client_Unsubscribe(&mqttCtx->client, &unsub);
-        PRINTF("....MQTT-SN Unsubscribe Predefined Topic Ack: rc = %d", rc);
-    }
-#endif
-
-    {
-        /* Short topic name subscribe */
-        /*SN_Subscribe subscribe;
-        SN_Publish publish;
-        SN_Unsubscribe unsub;
-
-        XMEMSET(&subscribe, 0, sizeof(SN_Subscribe));
-
-        subscribe.duplicate = 0;
-        subscribe.qos = MQTT_QOS_0;
-        subscribe.topic_type = SN_TOPIC_ID_TYPE_SHORT;
-        subscribe.topicNameId = SHORT_TOPIC_NAME;
-        subscribe.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Subscribe Short Topic: topic ID = %s",
-                subscribe.topicNameId);
-        rc = SN_Client_Subscribe(&mqttCtx->client, &subscribe);
-        if (rc != MQTT_CODE_SUCCESS) {
-            goto disconn;
-        }
-        PRINTF("....MQTT-SN Subscribe Short Topic Ack: topic id = %c%c, rc = %d",
-                ((byte*)&subscribe.subAck.topicId)[1],
-                ((byte*)&subscribe.subAck.topicId)[0],
-                subscribe.subAck.return_code);*/
-
-        /* Short topic name publish */
-        /*XMEMSET(&publish, 0, sizeof(SN_Publish));
-        publish.retain = 0;
-        publish.qos = mqttCtx->qos;
-        publish.duplicate = 0;
-        publish.topic_type = SN_TOPIC_ID_TYPE_SHORT;
-        publish.topic_name = SHORT_TOPIC_NAME;
-        if (publish.qos > MQTT_QOS_0) {
-            publish.packet_id = mqtt_get_packetid();
-        }
-        else {
-            publish.packet_id = 0x00;
-        }
-
-        publish.buffer = (byte*)TEST_MESSAGE" short";
-        publish.total_len = (word16)XSTRLEN(TEST_MESSAGE" short");
-
-        rc = SN_Client_Publish(&mqttCtx->client, &publish);
-
-        PRINTF("MQTT-SN Publish Short Topic: topic id = %s, rc = %d\r\nPayload = %s",
-            publish.topic_name,
-            publish.return_code,
-            publish.buffer);
-        if (rc != MQTT_CODE_SUCCESS) {
-            goto disconn;
-        }*/
-
-        /* Unsubscribe short topic name */
-        /*XMEMSET(&unsub, 0, sizeof(SN_Unsubscribe));
-
-        unsub.topic_type = SN_TOPIC_ID_TYPE_SHORT;
-        unsub.topicNameId = SHORT_TOPIC_NAME;
-        unsub.packet_id = mqtt_get_packetid();
-
-        PRINTF("MQTT-SN Unsubscribe Short Topic: topic ID = %s",
-                unsub.topicNameId);
-        rc = SN_Client_Unsubscribe(&mqttCtx->client, &unsub);
-        PRINTF("....MQTT-SN Unsubscribe Short Topic Ack: rc = %d", rc);*/
-    }
-
-#if 0
-    /* Disabled because will topic and message update are not currently
-       supported by Paho MQTT-SN Gateway */
-    {
-        /* Will Topic and Message update */
-        SN_Will willUpdate;
-        char willTopicName[] = WOLFMQTT_TOPIC_NAME"lastWishes";
-        char willTopicMsg[] = "I'LL BE BACK";
-
-        XMEMSET(&willUpdate, 0, sizeof(SN_Will));
-
-        /* Set new topic */
-        willUpdate.willTopic = willTopicName;
-        PRINTF("MQTT-SN Will Topic Update: topic name = %s", willUpdate.willTopic);
-        rc = SN_Client_WillTopicUpdate(&mqttCtx->client, &willUpdate);
-        PRINTF("....MQTT-SN Will Topic Update: response = %d, rc = %d",
-                willUpdate.resp.topicResp.return_code, rc);
-
-        /* Set new message*/
-        willUpdate.willMsg = (byte*)willTopicMsg;
-        willUpdate.willMsgLen = XSTRLEN(willTopicMsg);
-        PRINTF("MQTT-SN Will Message Update: message = %s", willUpdate.willMsg);
-        rc = SN_Client_WillMsgUpdate(&mqttCtx->client, &willUpdate);
-        PRINTF("....MQTT-SN Will Message Update: response = %d, rc = %d",
-                willUpdate.resp.msgResp.return_code, rc);
-    }
-#endif
-
-    /* Read Loop */
-    PRINTF("MQTT Waiting for message...");
-
-    do {
-        /* check for test mode */
-        if (mStopRead) {
-            rc = MQTT_CODE_SUCCESS;
-            PRINTF("MQTT Exiting...");
-            break;
-        }
-
-        /* Try and read packet */
-        rc = SN_Client_WaitMessage(&mqttCtx->client,
-                                   mqttCtx->cmd_timeout_ms);
-
-        /* check return code */
-    #ifdef WOLFMQTT_ENABLE_STDIN_CAP
-        if (rc == MQTT_CODE_STDIN_WAKE) {
-            XMEMSET(mqttCtx->rx_buf, 0, MAX_BUFFER_SIZE);
-            if (XFGETS((char*)mqttCtx->rx_buf, MAX_BUFFER_SIZE - 1,
-                    stdin) != NULL)
-            {
-                rc = (int)XSTRLEN((char*)mqttCtx->rx_buf);
-
-                /* Publish Topic */
-                mqttCtx->stat = WMQ_PUB;
-                XMEMSET(&mqttCtx->publishSN, 0, sizeof(SN_Publish));
-                mqttCtx->publishSN.retain = 0;
-                mqttCtx->publishSN.qos = mqttCtx->qos;
-                mqttCtx->publishSN.duplicate = 0;
-                mqttCtx->publishSN.topic_type = SN_TOPIC_ID_TYPE_NORMAL;
-                mqttCtx->publishSN.topic_name = (char*)&topicID;
-                if (mqttCtx->publishSN.qos > MQTT_QOS_0) {
-                    mqttCtx->publishSN.packet_id = mqtt_get_packetid();
-                }
-                else {
-                    mqttCtx->publishSN.packet_id = 0x00;
-                }
-                mqttCtx->publishSN.buffer = mqttCtx->rx_buf;
-                mqttCtx->publishSN.total_len = (word16)rc;
-                rc = SN_Client_Publish(&mqttCtx->client,
-                       &mqttCtx->publishSN);
-                PRINTF("MQTT-SN Publish: topic id = %hu, rc = %d\r\nPayload = %s",
-                    (word16)*mqttCtx->publishSN.topic_name,
-                        mqttCtx->publishSN.return_code,
-                        mqttCtx->publishSN.buffer);
-                if (rc != MQTT_CODE_SUCCESS) {
-                    break;
-                }
-            }
-        }
-        else
-    #endif
-        if (rc == MQTT_CODE_ERROR_TIMEOUT) {
-            /* Keep Alive */
-            PRINTF("Keep-alive timeout, sending ping");
-
-            rc = SN_Client_Ping(&mqttCtx->client, NULL);
-            if (rc != MQTT_CODE_SUCCESS) {
-                PRINTF("MQTT-SN Ping Keep Alive Error: %s (rc = %d)",
-                    MqttClient_ReturnCodeToString(rc), rc);
-                break;
-            }
-        }
-        else if (rc != MQTT_CODE_SUCCESS) {
-            /* There was an error */
-            PRINTF("MQTT-SN Message Wait Error: %s (rc = %d)",
-                MqttClient_ReturnCodeToString(rc), rc);
-            break;
-        }
-    } while (1);
-
-    /* Check for error */
-    if (rc != MQTT_CODE_SUCCESS) {
-        goto disconn;
-    }
-
-    {
-        /* Unsubscribe Topic */
-        SN_Unsubscribe unsubscribe;
-
-        XMEMSET(&unsubscribe, 0, sizeof(SN_Unsubscribe));
-        unsubscribe.topicNameId = DEFAULT_TOPIC_NAME;
-        unsubscribe.packet_id = mqtt_get_packetid();
-
-        rc = SN_Client_Unsubscribe(&mqttCtx->client, &unsubscribe);
-
-        PRINTF("MQTT Unsubscribe: %s (rc = %d)",
-            MqttClient_ReturnCodeToString(rc), rc);
-        if (rc != MQTT_CODE_SUCCESS) {
-            goto disconn;
-        }
-        mqttCtx->return_code = rc;
-    }
-
-    {
-        /* Demonstrate client sleep cycle using disconnect with a sleep timer */
-        SN_Disconnect disconnect;
-
-        XMEMSET(&disconnect, 0, sizeof(SN_Disconnect));
-
-        /* Set disconnect sleep timer */
-        disconnect.sleepTmr = 30;
-
-        /* Disconnect */
-        rc = SN_Client_Disconnect_ex(&mqttCtx->client, &disconnect);
-
-        PRINTF("MQTT Disconnect with sleep: %s (rc = %d)",
-            MqttClient_ReturnCodeToString(rc), rc);
-        if (rc != MQTT_CODE_SUCCESS) {
-            goto disconn;
-        }
-
-        /* Do low power state. Published messages from the broker will be
-           queued in the gateway.*/
-
-        /* Awake state: Send a ping req with client ID to retrieve buffered
-           messages. */
-        {
-            SN_PingReq ping;
-            XMEMSET(&ping, 0, sizeof(SN_PingReq));
-
-            ping.clientId = (char*)mqttCtx->client_id;
-
-            rc = SN_Client_Ping(&mqttCtx->client, &ping);
-            if (rc != MQTT_CODE_SUCCESS) {
-                PRINTF("MQTT Ping Keep Alive Error: %s (rc = %d)",
-                    MqttClient_ReturnCodeToString(rc), rc);
-                goto disconn;
-            }
-        }
-    }
-
-
 disconn:
-    /* Disconnect */
+    
     rc = SN_Client_Disconnect(&mqttCtx->client);
 
     PRINTF("MQTT Disconnect: %s (rc = %d)",
         MqttClient_ReturnCodeToString(rc), rc);
     if (rc != MQTT_CODE_SUCCESS) {
+        usleep(10000); // Add a small delay before retrying
         goto disconn;
     }
+
+    usleep(1000); /* This sleep seems necessary when running the client and Gateway (Paho MQTT-SN Gateway) on the same machine.
+    If not, when we run two sequential clients the Gateway fails to process both. Adding 1ms seems enough) */
 
     rc = MqttClient_NetDisconnect(&mqttCtx->client);
 
@@ -706,11 +351,17 @@ int main(int argc, char** argv)
     int rc;
 #ifdef WOLFMQTT_SN
     MQTTCtx mqttCtx;
+    char* client_id;
 
     /* init defaults */
     mqtt_init_ctx(&mqttCtx);
     mqttCtx.app_name = "sn-client";
-    mqttCtx.client_id = DEFAULT_CLIENT_ID"-SN";
+    srand(time(NULL));
+    int random_num = rand() % 9000 + 1000;
+    
+    client_id = (char*)malloc(50);
+    snprintf(client_id, 50, "%s-%d", DEFAULT_CLIENT_ID"-SN", random_num);
+    mqttCtx.client_id = client_id;
 
     /* Settings for MQTT-SN gateway */
     mqttCtx.host = "localhost";
