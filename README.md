@@ -27,6 +27,20 @@ By default, this script installs wolfMQTT version `1.19.0`. You can change the v
 
 Note: Ensure that the versions of wolfSSL and wolfMQTT are compatible with each other and with the MQTT-SN clients in this repository.
 
+## Configuration
+
+### Key Exchange Groups
+
+You can configure the key exchange groups for TLS/DTLS connections by defining `MQTT_WOLFSSL_GROUPS` in `src/common/mqttexample.c`. This setting defines which groups will be allowed for key exchange during the TLS handshake.
+
+For example, to set P-256 as the key exchange group:
+
+```c
+#define MQTT_WOLFSSL_GROUPS "P-256"
+```
+
+or `KYBER_LEVEL_1` if PQC is enabled.
+
 ## Build the project
 
 ```bash
