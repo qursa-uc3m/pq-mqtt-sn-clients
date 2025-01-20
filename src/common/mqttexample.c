@@ -29,6 +29,7 @@
 #include "mqttnet.h"
 #include "mqttport.h"
 
+#define MQTT_WOLFSSL_GROUPS "P-256"
 
 /* locals */
 static volatile word16 mPacketIdLast;
@@ -764,63 +765,81 @@ int mqtt_tls_cb(MqttClient* client)
 int mqtt_dtls_cb(MqttClient* client) {
 #ifdef WOLFSSL_DTLS
     int rc = WOLFSSL_FAILURE;
-    SocketContext * sock = (SocketContext *)client->net->context;
+    SocketContext* sock = (SocketContext*)client->net->context;
 
-    client->tls.ctx = wolfSSL_CTX_new(wolfDTLSv1_2_client_method());
-    if (client->tls.ctx) {
-        wolfSSL_CTX_set_verify(client->tls.ctx, WOLFSSL_VERIFY_PEER,
-                mqtt_tls_verify_cb);
+    client->tls.ctx = wolfSSL_CTX_new(wolfDTLSv1_3_client_method());
+    if (client->tls.ctx == NULL) {
+        PRINTF("Failed to create DTLS context");
+        return WOLFSSL_FAILURE;
+    }
 
-        /* default to success */
-        rc = WOLFSSL_SUCCESS;
+    /* Set up certificate verification */
+    wolfSSL_CTX_set_verify(client->tls.ctx, WOLFSSL_VERIFY_PEER,
+            mqtt_tls_verify_cb);
+
+    /* Set the groups */
+    #ifdef MQTT_WOLFSSL_GROUPS
+    rc = wolfSSL_CTX_set1_groups_list(client->tls.ctx, MQTT_WOLFSSL_GROUPS);
+    if (rc != WOLFSSL_SUCCESS) {
+        PRINTF("Failed to set groups list\n");
+    } else {
+        PRINTF("Set group list\n");
+    }
+    #endif
 
 #if !defined(NO_CERT) && !defined(NO_FILESYSTEM)
-        if (sock->mqttCtx->ca_file) {
-            /* Load CA certificate file */
-            rc = wolfSSL_CTX_load_verify_locations(client->tls.ctx,
-                sock->mqttCtx->ca_file, NULL);
-            if (rc != WOLFSSL_SUCCESS) {
-                PRINTF("Error loading CA %s: %d (%s)", sock->mqttCtx->ca_file,
-                    rc, wolfSSL_ERR_reason_error_string(rc));
-                return rc;
-            }
+    if (sock->mqttCtx->ca_file) {
+        /* Load CA certificate file */
+        rc = wolfSSL_CTX_load_verify_locations(client->tls.ctx,
+            sock->mqttCtx->ca_file, NULL);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Error loading CA %s: %d (%s)", sock->mqttCtx->ca_file,
+                rc, wolfSSL_ERR_reason_error_string(rc));
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
         }
-        if (sock->mqttCtx->mtls_certfile && sock->mqttCtx->mtls_keyfile) {
-            /* Load If using a mutual authentication */
-            rc = wolfSSL_CTX_use_certificate_file(client->tls.ctx,
-                sock->mqttCtx->mtls_certfile, WOLFSSL_FILETYPE_PEM);
-            if (rc != WOLFSSL_SUCCESS) {
-                PRINTF("Error loading certificate %s: %d (%s)",
-                    sock->mqttCtx->mtls_certfile,
-                    rc, wolfSSL_ERR_reason_error_string(rc));
-                return rc;
-            }
+    }
+    if (sock->mqttCtx->mtls_certfile && sock->mqttCtx->mtls_keyfile) {
+        /* Load If using a mutual authentication */
+        rc = wolfSSL_CTX_use_certificate_file(client->tls.ctx,
+            sock->mqttCtx->mtls_certfile, WOLFSSL_FILETYPE_PEM);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Error loading certificate %s: %d (%s)",
+                sock->mqttCtx->mtls_certfile,
+                rc, wolfSSL_ERR_reason_error_string(rc));
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
+        }
 
-            rc = wolfSSL_CTX_use_PrivateKey_file(client->tls.ctx,
-                sock->mqttCtx->mtls_keyfile, WOLFSSL_FILETYPE_PEM);
-            if (rc != WOLFSSL_SUCCESS) {
-                PRINTF("Error loading key %s: %d (%s)",
-                    sock->mqttCtx->mtls_keyfile,
-                    rc, wolfSSL_ERR_reason_error_string(rc));
-                return rc;
-            }
+        rc = wolfSSL_CTX_use_PrivateKey_file(client->tls.ctx,
+            sock->mqttCtx->mtls_keyfile, WOLFSSL_FILETYPE_PEM);
+        if (rc != WOLFSSL_SUCCESS) {
+            PRINTF("Error loading key %s: %d (%s)",
+                sock->mqttCtx->mtls_keyfile,
+                rc, wolfSSL_ERR_reason_error_string(rc));
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
         }
+    }
 #else
     (void)sock;
 #endif
 
-        client->tls.ssl = wolfSSL_new(client->tls.ctx);
-        if (client->tls.ssl == NULL) {
-            rc = WOLFSSL_FAILURE;
-            return rc;
-        }
+    client->tls.ssl = wolfSSL_new(client->tls.ctx);
+    if (client->tls.ssl == NULL) {
+        PRINTF("Failed to create DTLS object");
+        wolfSSL_CTX_free(client->tls.ctx);
+        return WOLFSSL_FAILURE;
     }
 
+    rc = WOLFSSL_SUCCESS;
     PRINTF("MQTT DTLS Setup (%d)", rc);
-#else /* WOLFSSL_DTLS */
+    return rc;
+
+#else
     (void)client;
-    int rc = 0;
     PRINTF("MQTT DTLS Setup - Must enable DTLS in wolfSSL!");
+    return 0;
 #endif
     return rc;
 }
