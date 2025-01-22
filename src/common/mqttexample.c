@@ -32,6 +32,9 @@
 //#define MQTT_WOLFSSL_GROUPS "P-256"
 #define MQTT_WOLFSSL_GROUPS "KYBER_LEVEL3"
 #define FORCE_HELLO_RETRY_REQUEST 1
+#ifndef MQTT_SN_DTLS_MTU
+    #define MQTT_SN_DTLS_MTU 2000  /* Same as COAP_DEFAULT_MTU */
+#endif
 
 /* locals */
 static volatile word16 mPacketIdLast;
@@ -834,7 +837,7 @@ int mqtt_dtls_cb(MqttClient* client) {
         return WOLFSSL_FAILURE;
     }
 
-    #ifdef FORCE_HELLO_RETRY_REQUEST
+    if (FORCE_HELLO_RETRY_REQUEST) {
         rc = wolfSSL_NoKeyShares(client->tls.ssl);
         if (rc != WOLFSSL_SUCCESS) {
             if (rc == BAD_FUNC_ARG) {
@@ -851,7 +854,12 @@ int mqtt_dtls_cb(MqttClient* client) {
             return rc;
         }
         PRINTF("Successfully set NoKeyShares");
-    #endif
+    }
+
+#ifdef WOLFSSL_DTLS_MTU
+    PRINTF("Setting DTLS MTU to %d\n", MQTT_SN_DTLS_MTU);
+    wolfSSL_dtls_set_mtu(client->tls.ssl, MQTT_SN_DTLS_MTU);
+#endif
 
     rc = WOLFSSL_SUCCESS;
     PRINTF("MQTT DTLS Setup (%d)", rc);
