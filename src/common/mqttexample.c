@@ -29,7 +29,9 @@
 #include "mqttnet.h"
 #include "mqttport.h"
 
-#define MQTT_WOLFSSL_GROUPS "P-256"
+//#define MQTT_WOLFSSL_GROUPS "P-256"
+#define MQTT_WOLFSSL_GROUPS "KYBER_LEVEL3"
+#define FORCE_HELLO_RETRY_REQUEST 1
 
 /* locals */
 static volatile word16 mPacketIdLast;
@@ -831,6 +833,25 @@ int mqtt_dtls_cb(MqttClient* client) {
         wolfSSL_CTX_free(client->tls.ctx);
         return WOLFSSL_FAILURE;
     }
+
+    #ifdef FORCE_HELLO_RETRY_REQUEST
+        rc = wolfSSL_NoKeyShares(client->tls.ssl);
+        if (rc != WOLFSSL_SUCCESS) {
+            if (rc == BAD_FUNC_ARG) {
+                PRINTF("Failed to set NoKeyShares: SSL object is NULL");
+            }
+            else if (rc == SIDE_ERROR) {
+                PRINTF("Failed to set NoKeyShares: Cannot be called on server side");
+            }
+            else {
+                PRINTF("Failed to set NoKeyShares: Unknown error %d", rc);
+            }
+            wolfSSL_free(client->tls.ssl);
+            wolfSSL_CTX_free(client->tls.ctx);
+            return rc;
+        }
+        PRINTF("Successfully set NoKeyShares");
+    #endif
 
     rc = WOLFSSL_SUCCESS;
     PRINTF("MQTT DTLS Setup (%d)", rc);
