@@ -28,9 +28,13 @@
 #include "mqttexample.h"
 #include "mqttnet.h"
 #include "mqttport.h"
+#include <stdlib.h>  /* for getenv() */
 
-//#define MQTT_WOLFSSL_GROUPS "P-256"
-#define MQTT_WOLFSSL_GROUPS "KYBER_LEVEL3"
+/* MQTT_WOLFSSL_GROUPS is now set via environment variable at runtime.
+ * Example: export MQTT_WOLFSSL_GROUPS="KYBER_LEVEL3"
+ * Supported values: P-256, KYBER_LEVEL1, KYBER_LEVEL3, KYBER_LEVEL5,
+ *                   P256_KYBER_LEVEL1, P384_KYBER_LEVEL3, P521_KYBER_LEVEL5
+ */
 #define FORCE_HELLO_RETRY_REQUEST 1
 #ifndef MQTT_SN_DTLS_MTU
     #define MQTT_SN_DTLS_MTU 2000  /* Same as COAP_DEFAULT_MTU */
@@ -782,15 +786,21 @@ int mqtt_dtls_cb(MqttClient* client) {
     wolfSSL_CTX_set_verify(client->tls.ctx, WOLFSSL_VERIFY_PEER,
             mqtt_tls_verify_cb);
 
-    /* Set the groups */
-    #ifdef MQTT_WOLFSSL_GROUPS
-    rc = wolfSSL_CTX_set1_groups_list(client->tls.ctx, MQTT_WOLFSSL_GROUPS);
-    if (rc != WOLFSSL_SUCCESS) {
-        PRINTF("Failed to set groups list\n");
-    } else {
-        PRINTF("Set group list\n");
+    /* Set the groups - runtime selection via environment variable */
+    {
+        const char *groups_env = getenv("MQTT_WOLFSSL_GROUPS");
+        if (groups_env && *groups_env) {
+            rc = wolfSSL_CTX_set1_groups_list(client->tls.ctx, groups_env);
+            if (rc != WOLFSSL_SUCCESS) {
+                PRINTF("Failed to set groups list: %s\n", groups_env);
+            } else {
+                PRINTF("Using DTLS groups: %s\n", groups_env);
+            }
+        } else {
+            PRINTF("MQTT_WOLFSSL_GROUPS not set, using wolfSSL defaults\n");
+            rc = WOLFSSL_SUCCESS;
+        }
     }
-    #endif
 
 #if !defined(NO_CERT) && !defined(NO_FILESYSTEM)
     if (sock->mqttCtx->ca_file) {

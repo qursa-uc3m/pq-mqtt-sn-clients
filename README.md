@@ -29,17 +29,11 @@ Note: Ensure that the versions of wolfSSL and wolfMQTT are compatible with each 
 
 ## Configuration
 
-### Key Exchange Groups
+### Key Exchange Groups (Runtime Selection)
 
-You can configure the key exchange groups for TLS/DTLS connections by defining `MQTT_WOLFSSL_GROUPS` in `src/common/mqttexample.c`. This setting defines which groups will be allowed for key exchange during the TLS handshake.
+The key exchange group for DTLS connections is configured via the `MQTT_WOLFSSL_GROUPS` environment variable at runtime. This allows switching between algorithms without recompilation.
 
-For example, to set P-256 as the key exchange group:
-
-```c
-#define MQTT_WOLFSSL_GROUPS "P-256"
-```
-
-or `KYBER_LEVEL_1` if PQC is enabled.
+If `MQTT_WOLFSSL_GROUPS` is not set, wolfSSL will use its default groups.
 
 ## Build the project
 
